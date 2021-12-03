@@ -17,11 +17,11 @@ void loop() {
 
 void setupESP() {
     File file1 = seekFile("/setup.json");           //читаем первый файл из памяти стримом
-    File file2 = FileFS.open("/setup2.json", "w");  //создаем второй файл
+    File file2 = FileFS.open("/setup2.json", "w");  //открыл второй файл для записи
+
+    WriteBufferingStream bfile2(file2, 64);  //записываем стрим во второй файл для записи
 
     ReadBufferingStream bfile1{file1, 64};  //стримим первый файл
-
-    WriteBufferingStream bfile2(file2, 64);  //записываем стрим
 
     DynamicJsonDocument doc(1024);
 
@@ -51,7 +51,9 @@ void setupESP() {
 
     } while (bfile1.findUntil(",", "]"));
 
-    Serial.println(readFile("/setup2.json", 20000));
+    // String temp = file2.readString();
+    // Serial.println(temp);
+    // Serial.println(readFile("/setup2.json", 20000));
 }
 
 File seekFile(const String& filename, size_t position) {
@@ -117,14 +119,19 @@ String prettyBytes(size_t size) {
 
 // void readSDData() {
 //     DynamicJsonDocument doc(1024);
-//     myFileSDCart = SD.open(filename);
+
+//     myFileSDCart = SD.open(filename); //открыл файл первый
 //
 //     if (myFileSDCart) {
-//         File filetmp = SD.open(filenametmp, FILE_WRITE);
-//         WriteBufferingStream bufferedFileTmp(filetmp, 64);
+
+//         File filetmp = SD.open(filenametmp, FILE_WRITE); //открыл второй временный для записи
+
+//         WriteBufferingStream bufferedFileTmp(filetmp, 64); //пистать в него стрим
 //
 //         ReadBufferingStream bufferedFile{myFileSDCart, 64};
+
 //         bufferedFile.find("[");
+
 //         do {
 //             deserializeJson(doc, bufferedFile);
 //             // Тут правим если надо
