@@ -20,8 +20,7 @@ void setupESP() {
     File file2 = FileFS.open("/setup2.json", "w");  //открыл второй файл для записи
 
     WriteBufferingStream bfile2(file2, 64);  //записываем стрим во второй файл для записи
-
-    ReadBufferingStream bfile1{file1, 64};  //стримим первый файл
+    ReadBufferingStream bfile1{file1, 64};   //стримим первый файл
 
     DynamicJsonDocument doc(1024);
 
@@ -37,12 +36,10 @@ void setupESP() {
         doc["web"]["order"] = 10;
 
         serializeJson(doc, bfile2);
-
         if (error) {
             Serial.print("json error: ");
             Serial.println(error.f_str());
         }
-
         Serial.println(
             String(i) + ") " +
             doc["type"].as<String>() + " " +
@@ -53,7 +50,7 @@ void setupESP() {
 
     // String temp = file2.readString();
     // Serial.println(temp);
-    // Serial.println(readFile("/setup2.json", 20000));
+    Serial.println(readFile("/setup2.json", 20000));
 }
 
 File seekFile(const String& filename, size_t position) {
