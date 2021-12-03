@@ -16,11 +16,11 @@ void loop() {
 }
 
 void setupESP() {
-    File file1 = seekFile("/setup.json");          //читаем первый файл из памяти стримом
+    File file1 = seekFile("/setup.json");           //читаем первый файл из памяти стримом
     File file2 = FileFS.open("/setup2.json", "w");  //открыл второй файл для записи
 
-    WriteBufferingStream bfile2(file2, 64);  //записываем стрим во второй файл для записи
-    ReadBufferingStream bfile1{file1, 64};   //стримим первый файл
+    // WriteBufferingStream bfile2(file2, 64);  //записываем стрим во второй файл для записи
+    // ReadBufferingStream bfile1{file1, 64};   //стримим первый файл
 
     DynamicJsonDocument doc(1024);
 
@@ -28,14 +28,15 @@ void setupESP() {
 
     int i = 0;
 
-    bfile1.find("[");
+    file1.find("[");
     do {
         i++;
-        DeserializationError error = deserializeJson(doc, bfile1);
+        DeserializationError error = deserializeJson(doc, file1);
 
-        doc["web"]["order"] = 10;
+        doc["web"]["order"] = i;
 
-        serializeJson(doc, bfile2);
+        serializeJson(doc, file2);
+
         if (error) {
             Serial.print("json error: ");
             Serial.println(error.f_str());
@@ -46,7 +47,7 @@ void setupESP() {
             doc["set"]["gpio"].as<String>() + " " +
             doc["web"]["order"].as<String>());
 
-    } while (bfile1.findUntil(",", "]"));
+    } while (file1.findUntil(",", "]"));
 
     file2.close();
 
