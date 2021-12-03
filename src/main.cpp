@@ -51,11 +51,7 @@ void setupESP() {
 
     } while (bfile1.findUntil(",", "]"));
 
-    // Serial.println(readFile("/setup.json", 20000));
-    Serial.println("--------------");
     Serial.println(readFile("/setup2.json", 20000));
-
-    // Serial.println(file2.readString());
 }
 
 File seekFile(const String& filename, size_t position) {
