@@ -16,7 +16,7 @@ void loop() {
 }
 
 void setupESP() {
-    File file1 = seekFile("/setup.json");           //читаем первый файл из памяти стримом
+    File file1 = seekFile("/setup.json");          //читаем первый файл из памяти стримом
     File file2 = FileFS.open("/setup2.json", "w");  //открыл второй файл для записи
 
     WriteBufferingStream bfile2(file2, 64);  //записываем стрим во второй файл для записи
@@ -48,9 +48,11 @@ void setupESP() {
 
     } while (bfile1.findUntil(",", "]"));
 
-    // String temp = file2.readString();
-    // Serial.println(temp);
+    file2.close();
+
+    Serial.println("-------------");
     Serial.println(readFile("/setup2.json", 20000));
+    Serial.println("-------------");
 }
 
 File seekFile(const String& filename, size_t position) {
