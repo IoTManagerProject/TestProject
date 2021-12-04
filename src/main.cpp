@@ -20,6 +20,7 @@ void loop() {
 void setupESP() {
     File file1 = seekFile("/setup.json");              //читаем первый файл из памяти стримом
     File file2 = FileFS.open("/setup.json.tmp", "w");  //открыл второй файл для записи
+    file2.println("[");
 
     // WriteBufferingStream bfile2(file2, 64);  //записываем стрим во второй файл для записи
     // ReadBufferingStream bfile1{file1, 64};   //стримим первый файл
@@ -37,6 +38,8 @@ void setupESP() {
         doc["web"]["order"] = i;
         serializeJsonPretty(doc, file2);
 
+        file2.println(",");
+
         // DeserializationError error =
         // if (error) {
         //     Serial.print("json error: ");
@@ -50,6 +53,8 @@ void setupESP() {
             doc["web"]["order"].as<String>());
 
     } while (file1.findUntil(",", "]"));
+
+    file2.println("]");
 
     file2.close();
 
