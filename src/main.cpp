@@ -1,5 +1,7 @@
 #include "main.h"
 
+#include "rest.h"
+
 void setup() {
     Serial.begin(115200);
     Serial.flush();
@@ -16,31 +18,31 @@ void loop() {
 }
 
 void setupESP() {
-    File file1 = seekFile("/setup.json");           //читаем первый файл из памяти стримом
-    File file2 = FileFS.open("/setup2.json", "w");  //открыл второй файл для записи
+    File file1 = seekFile("/setup.json");              //читаем первый файл из памяти стримом
+    File file2 = FileFS.open("/setup.json.tmp", "w");  //открыл второй файл для записи
 
     // WriteBufferingStream bfile2(file2, 64);  //записываем стрим во второй файл для записи
     // ReadBufferingStream bfile1{file1, 64};   //стримим первый файл
 
     DynamicJsonDocument doc(1024);
-
     Serial.println("during " + prettyBytes(ESP.getFreeHeap()));
-
     int i = 0;
 
     file1.find("[");
+
     do {
         i++;
-        DeserializationError error = deserializeJson(doc, file1);
 
+        deserializeJson(doc, file1);
         doc["web"]["order"] = i;
+        serializeJsonPretty(doc, file2);
 
-        serializeJson(doc, file2);
+        // DeserializationError error =
+        // if (error) {
+        //     Serial.print("json error: ");
+        //     Serial.println(error.f_str());
+        // }
 
-        if (error) {
-            Serial.print("json error: ");
-            Serial.println(error.f_str());
-        }
         Serial.println(
             String(i) + ") " +
             doc["type"].as<String>() + " " +
@@ -51,116 +53,9 @@ void setupESP() {
 
     file2.close();
 
+    // if (cutFile("/setup.json.tmp", "/setup.json")) Serial.println("file overwrited");
+
     Serial.println("-------------");
-    Serial.println(readFile("/setup2.json", 20000));
+    Serial.println(readFile("/setup.json.tmp", 20000));
     Serial.println("-------------");
 }
-
-File seekFile(const String& filename, size_t position) {
-    String path = filepath(filename);
-    auto file = FileFS.open(path, "r");
-    if (!file) {
-        Serial.println("[E] file error");
-    }
-    file.seek(position, SeekSet);
-    return file;
-}
-
-const String writeFile(const String& filename, const String& str) {
-    String path = filepath(filename);
-    auto file = FileFS.open(path, "w");
-    if (!file) {
-        return "failed";
-    }
-    file.print(str);
-    file.close();
-    return "sucсess";
-}
-
-const String readFile(const String& filename, size_t max_size) {
-    String path = filepath(filename);
-    auto file = FileFS.open(path, "r");
-    if (!file) {
-        return "failed";
-    }
-    size_t size = file.size();
-    if (size > max_size) {
-        file.close();
-        return "large";
-    }
-    String temp = file.readString();
-    file.close();
-    return temp;
-}
-
-const String filepath(const String& filename) {
-    return filename.startsWith("/") ? filename : "/" + filename;
-}
-
-bool fileSystemInit() {
-    if (!FileFS.begin()) {
-        Serial.println("FS Init ERROR, may be FS was not flashed");
-        return false;
-    }
-    Serial.println("FS Init completed");
-    return true;
-}
-
-String prettyBytes(size_t size) {
-    if (size < 1024)
-        return String(size) + "b";
-    else if (size < (1024 * 1024))
-        return String(size / 1024.0) + "kB";
-    else if (size < (1024 * 1024 * 1024))
-        return String(size / 1024.0 / 1024.0) + "MB";
-    else
-        return String(size / 1024.0 / 1024.0 / 1024.0) + "GB";
-}
-
-// void readSDData() {
-//     DynamicJsonDocument doc(1024);
-
-//     myFileSDCart = SD.open(filename); //открыл файл первый
-//
-//     if (myFileSDCart) {
-
-//         File filetmp = SD.open(filenametmp, FILE_WRITE); //открыл второй временный для записи
-
-//         WriteBufferingStream bufferedFileTmp(filetmp, 64); //пистать в него стрим
-//
-//         ReadBufferingStream bufferedFile{myFileSDCart, 64};
-
-//         bufferedFile.find("[");
-
-//         do {
-//             deserializeJson(doc, bufferedFile);
-//             // Тут правим если надо
-//
-//             serializeJson(doc, bufferedFileTmp);
-//
-//             serializeJson(doc, Serial);
-//             Serial.println();
-//             Serial.println(doc["type"].as<String>());
-//         } while (bufferedFile.findUntil(",", "]"));
-
-//         // close the file:
-//         myFileSDCart.close();
-//
-//         bufferedFileTmp.flush();
-//         filetmp.close();
-
-//         // FS.rename(filenametmp, filename);
-//         /*
-//         int rc = rename(filenametmp, filename);
-//         if (rc != 0) {
-//             ESP_LOGE(TAG, "Rename failed, errno=%d (%s)", errno, strerror(errno));
-//         }
-//         */
-//
-//     } else {
-//         // if the file didn't open, print an error:
-//         Serial.print(F("Error opening (or file not exists) "));
-//         Serial.println(filename);
-//     }
-//     lastSDRead = millis();
-// }
